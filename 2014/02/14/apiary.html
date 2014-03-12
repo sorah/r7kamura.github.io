@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta content="IE=edge;chrome=1" http-equiv="X-UA-Compatible" />
+    <title>Apiary - r7kamura per second</title><link rel="alternate" type="application/atom+xml" title="Atom Feed" href="/feed.xml" /><link href="/stylesheets/all.css?1394610828" media="all" rel="stylesheet" type="text/css" /><link href="/images/favicon.ico" rel="icon" type="image/ico" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-inner"><a href="/">
+        <div class="header-image">
+          <img width="100" height="100" class="header-image-element" src="/images/r7kamura.png?1394610828" />
+        </div>
+        <div class="header-text">
+          <h1 class="header-text-title">
+            r7kamura per second
+          </h1>
+          <p class="header-text-description">
+            Bits of technologies piled up here and there.
+          </p>
+        </div></a>
+        
+      </div>
+    </header>
+    <div class="main">
+      <div class="main-inner main-inner-single-article">
+        <article class="main-article">
+          <div class="main-article-header">
+            <h1 class="main-article-header-title">
+              Apiary
+            </h1>
+            <div class="main-article-header-date">
+              2014-02-14
+            </div>
+          </div>
+          <p>API(とそれに携わる開発者)の規模が拡大してくると、ドキュメントの整備や、仕様と実装の一貫性の維持、
+          クライアントとの知識の共有など、考慮すべき問題が沢山出てくる。
+          これらの問題に対する現実的な解決策を探るため、
+          ApiaryというAPI開発支援用のサービスを簡単に俯瞰することにした。
+          ここでは紹介しないが、他に
+          <a href="http://raml.org/">RAML</a>、
+          <a href="http://json-schema.org/">JSON Schema</a>、
+          <a href="https://helloreverb.com/developers/swagger">Swagger</a>、
+          <a href="http://en.wikipedia.org/wiki/Web_Application_Description_Language">WADL</a>、
+          <a href="https://github.com/r7kamura/autodoc">Autodoc</a>
+          などが関連するものとして挙げられる。</p>
+          
+          <h2>Apiary</h2>
+          
+          <p><a href="http://apiary.io/">http://apiary.io/</a></p>
+          
+          <p>Apiaryは、API Blueprintと呼ばれる言語でAPIのインターフェース仕様書を記述する、という開発方法を提唱している。
+          API BlueprintはMarkdownを拡張した言語で、特殊な記述を用いて幾つかのメタ情報を付与出来る形になっている。
+          Markdownを採用することで人間にとって読み書きしやすい記法を提供しながら、
+          同時に幾つかの制約を適用することで機械に読みやすい記法(=JSON形式等に変換出来る)も実現している。</p>
+          
+          <h2>Mock Server</h2>
+          
+          <p>APIクライアントとサーバを並行して開発するにはまずAPIのモックサーバが無ければならないということで、
+          ApiaryではAPI Blueprintの記述をもとにモックサーバを提供するという機能を提供している。
+          サーバの返すサンプルレスポンスを予め登録しておき、これをリクエストに応じて返すという仕組み。
+          とりあえずAPI Blueprintでインターフェース仕様さえ定義しておけば、
+          サーバの実装が無くてもある程度クライアントの開発を先に進められるということになる。</p>
+          
+          <h2>Documentation</h2>
+          
+          <p><a href="http://docs.gooddata.apiary.io/">http://docs.gooddata.apiary.io/</a></p>
+          
+          <p>API BlueprintはMarkdownベースの記法で書かれているため、そのままGitHubに置いてもHTMLとして描画される。
+          Apiaryでは、API Blueprintから自動でドキュメントを生成してくれる機能も提供している。
+          このドキュメントにはコンソール機能が付いていて、
+          試しにパラメータを与えてHTTPリクエストを送ってみることも出来る。
+          他に、APIについての質問等を行うためのコメント機能も付いている。
+          また、APIサーバとの通信を中継するためのURLが与えられており、
+          送られたリクエストとレスポンスがインターフェース仕様に沿ったものかどうかを検閲することも出来る。
+          中継サーバのログを見ることで、ある値がレスポンスに含まれるはずが含まれていない、といった状況を検出する事が出来る。</p>
+          
+          <h2>Automation</h2>
+          
+          <p>ドキュメントと実体が乖離してしまうことを防ぐため、
+          API Blueprintを利用してAPIサーバをテストする為のツールが提供されている。
+          このテストを各種CIサービス等で回し続けることで、ドキュメントを常に最新の状態に保つことが出来る。
+          また、既存の実装を元にRSpecやCurlの出力からAPI Blueprintを生成する、というツールも提供されている。
+          これを使えば、既存の実装に対して自動的にインターフェース仕様書を生成することも出来る。</p>
+          
+          <h2>Open Source</h2>
+          
+          <p><a href="http://apiblueprint.org/">API Blueprint - API Documentation with powerful tooling</a><br>
+          API Blueprintのパーサや各種テストツールなどは、OSSとして公開されている。</p>
+          
+        </article>
+      </div>
+    </div>
+    <footer class="footer">
+      <div class="footer-inner">
+        <p class="footer-copyright">
+          Copyright &copy; 2013-2014 by <a target="_blank" href="http://twitter.com/r7kamura">@r7kamura</a>
+        </p>
+        <p class="footer-powers">
+          Powered by <a href="https://github.com/r7kamura/r7kamura.github.io">Github</a> & <a href="https://travis-ci.org/r7kamura/r7kamura.github.io">Travis CI</a> & <a href="https://github.com/r7kamura/sitespec">Sitespec</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

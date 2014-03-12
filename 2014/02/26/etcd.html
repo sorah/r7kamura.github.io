@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta content="IE=edge;chrome=1" http-equiv="X-UA-Compatible" />
+    <title>Etcd - r7kamura per second</title><link rel="alternate" type="application/atom+xml" title="Atom Feed" href="/feed.xml" /><link href="/stylesheets/all.css?1394610828" media="all" rel="stylesheet" type="text/css" /><link href="/images/favicon.ico" rel="icon" type="image/ico" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-inner"><a href="/">
+        <div class="header-image">
+          <img width="100" height="100" class="header-image-element" src="/images/r7kamura.png?1394610828" />
+        </div>
+        <div class="header-text">
+          <h1 class="header-text-title">
+            r7kamura per second
+          </h1>
+          <p class="header-text-description">
+            Bits of technologies piled up here and there.
+          </p>
+        </div></a>
+        
+      </div>
+    </header>
+    <div class="main">
+      <div class="main-inner main-inner-single-article">
+        <article class="main-article">
+          <div class="main-article-header">
+            <h1 class="main-article-header-title">
+              Etcd
+            </h1>
+            <div class="main-article-header-date">
+              2014-02-26
+            </div>
+          </div>
+          <p>DockerやFlynnを調べている中でetcdについて少し知識を得た。</p>
+          
+          <h2>概要</h2>
+          
+          <p>etcdはあるクラスタ内の複数のノード(≒ホスト)間で値を共有出来るKVSで、
+          クラスタ内の全てのノード上でetcdを動かしておくことで、
+          ノード間で設定値を共有したりサービスディスカバリに利用したり出来る。
+          CoreOSという小さなOSの部品の1つとして開発されており、Go言語で実装されている。</p>
+          
+          <h2>KVS</h2>
+          
+          <p>KeyとValueには文字列を利用する。
+          Keyはファイルシステムのパスのようにスラッシュ区切りの形式になっており、
+          ディレクトリとファイルのように利用出来る。
+          例えば、あるディレクトリ(≒名前空間)の中に含まれるファイル(≒値)を全て取得する、ということも出来る。</p>
+          
+          <h2>機能</h2>
+          
+          <p>HTTP経由で操作出来る。
+          Curl等からでも簡単に利用出来るが、
+          Go言語で書かれた専用クライアントも利用出来る。
+          KeyはURLのパスで指定し、値はリクエストボディで渡す。
+          取得にはGET、保存にはPUT、削除にはDELETEを使う他、
+          GETで待ち受けながら設定の変更通知を監視する機能がある。
+          その他、値の保存時にTTL(有効期限)を設定する機能や、
+          Atomicに更新する機能(変更前後の値を渡して一致したときのみ更新)、
+          クライアント証明書を利用してSSL認証を行う機能が用意されている。</p>
+          
+          <h2>合意形成</h2>
+          
+          <p>クラスタ内のノード内で同じ値を共有する(=合意を形成する)ため、
+          Raftというアルゴリズムを用いている。
+          クラスタ内の複数のノードの内、1つのノードが選挙形式によって代表となり、
+          残りのノードは代表と通信することで値を共有する。
+          通信エラーなどによって代表のノードと通信出来なくなった場合、
+          残されたノードの中で選挙を行い新たな代表を決定する。
+          同じく合意形成の為のプロトコルの集合であるPaxosアルゴリズムとよく似ているが、
+          Raftはより現実的な問題に対処出来ると謳っている。
+          なお、P2P間での情報伝達手段としてはSerfに代表されるようなGossip Protocolも存在する。</p>
+          
+          <h2>使い道</h2>
+          
+          <p>用途の1つとして、ノードを跨いだ複数のDockerコンテナの管理が考えられる。
+          <a href="http://r7kamura.github.io/2014/02/18/private-paas-beach.html">前回の記事</a>
+          ではDokkuを利用してmini-Herokuを構築する方法を紹介したが、
+          Dokkuは単一の親ホスト上にプロキシを1台立て、
+          新しくコンテナが追加されるたびにプロキシの設定ファイルを追加していくという方式だった。
+          この方式ではコンテナやプロキシを複数のホストに配置してスケールさせることが出来なかったが、
+          etcdを使うことで、稼働中のコンテナやプロキシのアドレス、空いているマシンリソースなどを共有し、
+          有機的にクラスタをスケールさせていくことが出来ると考えられる。</p>
+          
+          <h2>参考</h2>
+          
+          <ul>
+          <li><a href="https://github.com/coreos/etcd">coreos/etcd</a></li>
+          <li><a href="https://coreos.com/using-coreos/etcd/">Using etcd with CoreOS</a></li>
+          <li><a href="https://flynn.io/">Flynn - The product that ops provides to developers</a></li>
+          <li><a href="http://raftconsensus.github.io/">Raft Consensus Algorithm</a></li>
+          <li><a href="https://speakerdeck.com/vanstee/raft-consensus-for-rubyists">Raft: Consensus for Rubyists // Speaker Deck</a></li>
+          <li><a href="https://github.com/hashicorp/serf">hashicorp/serf</a></li>
+          <li><a href="http://qiita.com/nyarla/items/ba3f05c7c2c7bd6490e8">AdventCalendar - NEETのうちに押さえておきたいP2P技術入門 - Qiita</a></li>
+          <li><a href="http://ja.wikipedia.org/wiki/Apache_ZooKeeper">Apache ZooKeeper - Wikipedia</a></li>
+          <li><a href="http://r7kamura.github.io/2014/02/18/private-paas-beach.html">Private PaaS Beach - r7kamura per second</a></li>
+          </ul>
+          
+        </article>
+      </div>
+    </div>
+    <footer class="footer">
+      <div class="footer-inner">
+        <p class="footer-copyright">
+          Copyright &copy; 2013-2014 by <a target="_blank" href="http://twitter.com/r7kamura">@r7kamura</a>
+        </p>
+        <p class="footer-powers">
+          Powered by <a href="https://github.com/r7kamura/r7kamura.github.io">Github</a> & <a href="https://travis-ci.org/r7kamura/r7kamura.github.io">Travis CI</a> & <a href="https://github.com/r7kamura/sitespec">Sitespec</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

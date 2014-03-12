@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta content="IE=edge;chrome=1" http-equiv="X-UA-Compatible" />
+    <title>Database Encryption - r7kamura per second</title><link rel="alternate" type="application/atom+xml" title="Atom Feed" href="/feed.xml" /><link href="/stylesheets/all.css?1394610828" media="all" rel="stylesheet" type="text/css" /><link href="/images/favicon.ico" rel="icon" type="image/ico" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-inner"><a href="/">
+        <div class="header-image">
+          <img width="100" height="100" class="header-image-element" src="/images/r7kamura.png?1394610828" />
+        </div>
+        <div class="header-text">
+          <h1 class="header-text-title">
+            r7kamura per second
+          </h1>
+          <p class="header-text-description">
+            Bits of technologies piled up here and there.
+          </p>
+        </div></a>
+        
+      </div>
+    </header>
+    <div class="main">
+      <div class="main-inner main-inner-single-article">
+        <article class="main-article">
+          <div class="main-article-header">
+            <h1 class="main-article-header-title">
+              Database Encryption
+            </h1>
+            <div class="main-article-header-date">
+              2014-03-12
+            </div>
+          </div>
+          <p>データベースの暗号化界隈の話を調べたのでQ&amp;A形式でまとめた。</p>
+          
+          <h2>なぜ暗号化を行うのか？</h2>
+          
+          <p>一般的には、以下の様な情報の漏洩を防ぐため。</p>
+          
+          <ul>
+          <li>個人が識別できる情報</li>
+          <li>個人の行動履歴</li>
+          <li>財務情報</li>
+          <li>知的財産</li>
+          <li>財産</li>
+          <li>その他開示されていない情報</li>
+          </ul>
+          
+          <h2>最近日本で大きな情報漏洩被害にあった企業例は？</h2>
+          
+          <ul>
+          <li>Sony (PlayStation Network)</li>
+          <li>Yahoo! Japan</li>
+          <li>LINE</li>
+          <li>2ch</li>
+          <li>@PAGES</li>
+          </ul>
+          
+          <h2>データベースの暗号化におけるベストプラクティスは？</h2>
+          
+          <p>StackOverflow等の意見を集めた限り、この辺を全部やるというのがベストプラクティスという雰囲気。</p>
+          
+          <ul>
+          <li>通信データの暗号化: SSL</li>
+          <li>格納データの暗号化: FDE + TDE (後述)</li>
+          </ul>
+          
+          <h2>格納データの暗号化機能を提供しているサービスの例は？</h2>
+          
+          <ul>
+          <li>Amazon RDS for Oracle</li>
+          <li>Amazon RDS for SQL Server</li>
+          <li>Amazon S3</li>
+          <li>Google Cloud Storage</li>
+          <li>Oracle Database Storage Service</li>
+          </ul>
+          
+          <h2>格納データの暗号化手法の例は？</h2>
+          
+          <ul>
+          <li>FDE = Full Disk Encryption</li>
+          <li>TDE = Transparent Data Encryption</li>
+          <li>アプリケーション側での暗号化</li>
+          </ul>
+          
+          <h2>FDEとは？</h2>
+          
+          <p>データを格納するストレージ全体を暗号化する手法。
+          自己暗号化ドライブを利用してハードウェア全体を暗号化する方法や、
+          <a href="http://ja.wikipedia.org/wiki/TrueCrypt">TrueCrypt</a>を利用して暗号化した仮想ディスクを作成する等の方法がある。</p>
+          
+          <h2>TDEとは？</h2>
+          
+          <p>データベース内の特定の空間に格納されるデータを透過的に暗号化する手法。
+          例えばRDBMSでは、指定したテーブル内の全てのデータ、ログ、インデックスが暗号化される。
+          仮にディスクやファイルが盗まれた場合でも情報漏洩の可能性は低い。</p>
+          
+          <h2>FDEと比べたTDEの利点は？</h2>
+          
+          <p>OSへの侵入に対する耐性。<br>
+          攻撃者がOSへのログインに成功した場合、FDEでは攻撃者は(OSのアクセス制御を受けながら)復号されたデータを読み込める。
+          一方、TDEではファイルの内容は暗号化されたままの為、攻撃者はデータの内容を解読出来ない。</p>
+          
+          <p>バックアップ。<br>
+          FDEでは、復号されたファイルをコピーするため、コピーされたデータは平文で保存される。
+          一方、TDEでは暗号化されたファイルをコピーするため、コピーされたデータも暗号化された状態で保存される。</p>
+          
+          <p>暗号化の処理効率。<br>
+          FDEではディスク上の全てのファイルを暗号化する一方、
+          TDEでは指定されたテーブルやそのインデックスのみ暗号化すれば良く、無駄が少ない。</p>
+          
+          <h2>アプリケーション側での暗号化と比べたTDEの利点は？</h2>
+          
+          <p>TDEでは、アプリケーション側で暗号化について意識する必要がなく、既存の実装を全く変更する必要がない。
+          また、アプリケーション側で暗号化に利用するキーの管理を行う必要がない。
+          DBのキャッシュを利用できる場合においては、SQL文実行のたびにデータを暗号したりする必要が無く、実行効率が良い。
+          アプリケーション側で暗号化を行った場合、暗号化したデータに対してはインデックスを利用出来ないが、
+          TDEではこのような制限は無い。そのため、暗号化したデータに対しても現実的に検索処理を行える。</p>
+          
+          <h2>AES-NIとは？</h2>
+          
+          <p>Intel Xeonプセッサの5600番台以降に搭載されたx86命令セットへの拡張機能で、
+          これを搭載したCPU(Ivy BridgeやHaswellなど)でのAES暗号化/復号処理が数倍程度のスループットに向上した事例が確認されている。
+          TDE等AES暗号化を利用する場合、AES-NIの機能を利用出来るCPUを利用することが望ましい。</p>
+          
+          <h2>TDEを利用出来るRDBMSは？</h2>
+          
+          <p>代表的なのはOracleとSQL Server、その他参考までに製品レベルのものだとPostgreSQL 9.1ベースのPowerGres Plus等が挙げられる。</p>
+          
+          <ul>
+          <li><a href="http://docs.oracle.com/cd/E16338_01/network.112/b56286/asotrans.htm">Oracle</a></li>
+          <li><a href="http://msdn.microsoft.com/ja-jp/library/bb934049.aspx">SQL Server</a></li>
+          <li><a href="http://powergres.sraoss.co.jp/manual/Plus/V91/linux/tde.html">PowerGres Plus</a></li>
+          </ul>
+          
+          <h2>RDSで利用出来るものは？</h2>
+          
+          <p>OracleとSQL ServerはRDSで利用できる。但しライセンスの持ち込みが必要な場合がある。</p>
+          
+          <ul>
+          <li><a href="http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.Oracle.Options.html#Appendix.Oracle.Options.AdvSecurity">Appendix: Options for Oracle DB Engine - Amazon Relational Database Service</a></li>
+          <li><a href="http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.Options">Microsoft SQL Server on Amazon RDS - Amazon Relational Database Service</a></li>
+          <li><a href="http://aws.amazon.com/jp/rds/pricing/">Amazon RDS 料金表 | アマゾン ウェブ サービス（AWS 日本語）</a></li>
+          </ul>
+          
+        </article>
+      </div>
+    </div>
+    <footer class="footer">
+      <div class="footer-inner">
+        <p class="footer-copyright">
+          Copyright &copy; 2013-2014 by <a target="_blank" href="http://twitter.com/r7kamura">@r7kamura</a>
+        </p>
+        <p class="footer-powers">
+          Powered by <a href="https://github.com/r7kamura/r7kamura.github.io">Github</a> & <a href="https://travis-ci.org/r7kamura/r7kamura.github.io">Travis CI</a> & <a href="https://github.com/r7kamura/sitespec">Sitespec</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

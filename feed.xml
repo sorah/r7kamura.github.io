@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>r7kamura per second</title>
+  <subtitle>Bits of technologies piled up here and there.</subtitle>
+  <id>http://r7kamura.github.io/</id>
+  <link href="http://r7kamura.github.io/"/>
+  <link href="http://r7kamura.github.io/feed.xml" rel="self"/>
+  <updated>2014-03-12T00:00:00+00:00</updated>
+  <author>
+    <name>r7kamura</name>
+  </author>
+  <entry>
+    <title>Database Encryption</title>
+    <link rel="alternate" href="http://r7kamura.github.io/2014/03/12/database-encryption.html"/>
+    <id>http://r7kamura.github.io/2014/03/12/database-encryption.html</id>
+    <published>2014-03-12T00:00:00+00:00</published>
+    <updated>2014-03-12T07:52:21+00:00</updated>
+    <author>
+      <name>r7kamura</name>
+    </author>
+    <content type="html">&lt;p&gt;データベースの暗号化界隈の話を調べたのでQ&amp;amp;A形式でまとめた。&lt;/p&gt;
+
+&lt;h2&gt;なぜ暗号化を行うのか？&lt;/h2&gt;
+
+&lt;p&gt;一般的には、以下の様な情報の漏洩を防ぐため。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;個人が識別できる情報&lt;/li&gt;
+&lt;li&gt;個人の行動履歴&lt;/li&gt;
+&lt;li&gt;財務情報&lt;/li&gt;
+&lt;li&gt;知的財産&lt;/li&gt;
+&lt;li&gt;財産&lt;/li&gt;
+&lt;li&gt;その他開示されていない情報&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;最近日本で大きな情報漏洩被害にあった企業例は？&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Sony (PlayStation Network)&lt;/li&gt;
+&lt;li&gt;Yahoo! Japan&lt;/li&gt;
+&lt;li&gt;LINE&lt;/li&gt;
+&lt;li&gt;2ch&lt;/li&gt;
+&lt;li&gt;@PAGES&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;データベースの暗号化におけるベストプラクティスは？&lt;/h2&gt;
+
+&lt;p&gt;StackOverflow等の意見を集めた限り、この辺を全部やるというのがベストプラクティスという雰囲気。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;通信データの暗号化: SSL&lt;/li&gt;
+&lt;li&gt;格納データの暗号化: FDE + TDE (後述)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;格納データの暗号化機能を提供しているサービスの例は？&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Amazon RDS for Oracle&lt;/li&gt;
+&lt;li&gt;Amazon RDS for SQL Server&lt;/li&gt;
+&lt;li&gt;Amazon S3&lt;/li&gt;
+&lt;li&gt;Google Cloud Storage&lt;/li&gt;
+&lt;li&gt;Oracle Database Storage Service&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;格納データの暗号化手法の例は？&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;FDE = Full Disk Encryption&lt;/li&gt;
+&lt;li&gt;TDE = Transparent Data Encryption&lt;/li&gt;
+&lt;li&gt;アプリケーション側での暗号化&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;FDEとは？&lt;/h2&gt;
+
+&lt;p&gt;データを格納するストレージ全体を暗号化する手法。
+自己暗号化ドライブを利用してハードウェア全体を暗号化する方法や、
+&lt;a href="http://ja.wikipedia.org/wiki/TrueCrypt"&gt;TrueCrypt&lt;/a&gt;を利用して暗号化した仮想ディスクを作成する等の方法がある。&lt;/p&gt;
+
+&lt;h2&gt;TDEとは？&lt;/h2&gt;
+
+&lt;p&gt;データベース内の特定の空間に格納されるデータを透過的に暗号化する手法。
+例えばRDBMSでは、指定したテーブル内の全てのデータ、ログ、インデックスが暗号化される。
+仮にディスクやファイルが盗まれた場合でも情報漏洩の可能性は低い。&lt;/p&gt;
+
+&lt;h2&gt;FDEと比べたTDEの利点は？&lt;/h2&gt;
+
+&lt;p&gt;OSへの侵入に対する耐性。&lt;br&gt;
+攻撃者がOSへのログインに成功した場合、FDEでは攻撃者は(OSのアクセス制御を受けながら)復号されたデータを読み込める。
+一方、TDEではファイルの内容は暗号化されたままの為、攻撃者はデータの内容を解読出来ない。&lt;/p&gt;
+
+&lt;p&gt;バックアップ。&lt;br&gt;
+FDEでは、復号されたファイルをコピーするため、コピーされたデータは平文で保存される。
+一方、TDEでは暗号化されたファイルをコピーするため、コピーされたデータも暗号化された状態で保存される。&lt;/p&gt;
+
+&lt;p&gt;暗号化の処理効率。&lt;br&gt;
+FDEではディスク上の全てのファイルを暗号化する一方、
+TDEでは指定されたテーブルやそのインデックスのみ暗号化すれば良く、無駄が少ない。&lt;/p&gt;
+
+&lt;h2&gt;アプリケーション側での暗号化と比べたTDEの利点は？&lt;/h2&gt;
+
+&lt;p&gt;TDEでは、アプリケーション側で暗号化について意識する必要がなく、既存の実装を全く変更する必要がない。
+また、アプリケーション側で暗号化に利用するキーの管理を行う必要がない。
+DBのキャッシュを利用できる場合においては、SQL文実行のたびにデータを暗号したりする必要が無く、実行効率が良い。
+アプリケーション側で暗号化を行った場合、暗号化したデータに対してはインデックスを利用出来ないが、
+TDEではこのような制限は無い。そのため、暗号化したデータに対しても現実的に検索処理を行える。&lt;/p&gt;
+
+&lt;h2&gt;AES-NIとは？&lt;/h2&gt;
+
+&lt;p&gt;Intel Xeonプセッサの5600番台以降に搭載されたx86命令セットへの拡張機能で、
+これを搭載したCPU(Ivy BridgeやHaswellなど)でのAES暗号化/復号処理が数倍程度のスループットに向上した事例が確認されている。
+TDE等AES暗号化を利用する場合、AES-NIの機能を利用出来るCPUを利用することが望ましい。&lt;/p&gt;
+
+&lt;h2&gt;TDEを利用出来るRDBMSは？&lt;/h2&gt;
+
+&lt;p&gt;代表的なのはOracleとSQL Server、その他参考までに製品レベルのものだとPostgreSQL 9.1ベースのPowerGres Plus等が挙げられる。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://docs.oracle.com/cd/E16338_01/network.112/b56286/asotrans.htm"&gt;Oracle&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://msdn.microsoft.com/ja-jp/library/bb934049.aspx"&gt;SQL Server&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://powergres.sraoss.co.jp/manual/Plus/V91/linux/tde.html"&gt;PowerGres Plus&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;RDSで利用出来るものは？&lt;/h2&gt;
+
+&lt;p&gt;OracleとSQL ServerはRDSで利用できる。但しライセンスの持ち込みが必要な場合がある。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.Oracle.Options.html#Appendix.Oracle.Options.AdvSecurity"&gt;Appendix: Options for Oracle DB Engine - Amazon Relational Database Service&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.Options"&gt;Microsoft SQL Server on Amazon RDS - Amazon Relational Database Service&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://aws.amazon.com/jp/rds/pricing/"&gt;Amazon RDS 料金表 | アマゾン ウェブ サービス（AWS 日本語）&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</content>
+  </entry>
+  <entry>
+    <title>REST in Piece</title>
+    <link rel="alternate" href="http://r7kamura.github.io/2014/03/03/rest-in-piece.html"/>
+    <id>http://r7kamura.github.io/2014/03/03/rest-in-piece.html</id>
+    <published>2014-03-03T00:00:00+00:00</published>
+    <updated>2014-03-12T07:52:21+00:00</updated>
+    <author>
+      <name>r7kamura</name>
+    </author>
+    <content type="html">&lt;p&gt;人の手でREST APIをつくるのに少し疲れた。&lt;/p&gt;
+
+&lt;h2&gt;Overview&lt;/h2&gt;
+
+&lt;p&gt;REST API生成用のフレームワークがあればなと思い、少し思考を巡らせる。
+Adapter &amp;lt; Module という二層構造で構成されたフレームワーク。
+AdapterというDB接続用のアプリを、
+Moduleと呼ばれる幾つかのMiddlewareが内包する。&lt;/p&gt;
+
+&lt;h2&gt;Adapter&lt;/h2&gt;
+
+&lt;p&gt;AdapterはDBの為のHTTPラッパーとしての責務を負う。
+具体的には、HTTPリクエストを解釈してDBに問い合わせる機能と、
+DBからの応答をHTTPレスポンスに変換する機能だけを持つ。
+実際に利用するDBと疎結合にするため、Adapterの内部実装も層構造になることが予想される。
+Adapterを取り替えることで別のDBも利用出来る。
+例えば一般的なRDBを使う代わりに、
+更に別のAPIにリクエストを委譲する等の用途が考えられる。
+既存のAPIから徐々に移行していきたい場合などに必要になる。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;ActiveRecordAdapter&lt;/li&gt;
+&lt;li&gt;MongoidAdapter&lt;/li&gt;
+&lt;li&gt;SomeAPIAdapter&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Module&lt;/h2&gt;
+
+&lt;p&gt;必要に応じてコアの機能をモジュールで拡張する。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Authentication - OAuth認証やBasic認証を行う&lt;/li&gt;
+&lt;li&gt;Caching - HTTPレイヤでのキャッシュ (ETag等)&lt;/li&gt;
+&lt;li&gt;HATEOAS - リソース間を遷移するためのリンク情報を提供する&lt;/li&gt;
+&lt;li&gt;Interface - インターフェース定義を宣言する&lt;/li&gt;
+&lt;li&gt;Logging - リクエスト &amp;amp; レスポンスのログを取る&lt;/li&gt;
+&lt;li&gt;MIME - 最適なContent-Typeに変換する&lt;/li&gt;
+&lt;li&gt;Validation - 与えられたインターフェース定義を元にリクエストを検閲する&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Examples&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://python-eve.org/index.html"&gt;Eve&lt;/a&gt; - Python製のREST API用フレームワーク&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://parse.com/docs/rest"&gt;Parse&lt;/a&gt; - REST APIも提供するMBaaS&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://github.com/r7kamura/restaurant/"&gt;Restaurant&lt;/a&gt; - MongoDBの単純なRailsラッパー&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://github.com/r7kamura/rack-spec"&gt;Rack::Spec&lt;/a&gt; - REST APIの為のRack-Middleware&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://github.com/r7kamura/rack-mongoid_adapter"&gt;Rack::MongoidAdapter&lt;/a&gt; - Rack用のMongoidラッパー&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;おわりに&lt;/h2&gt;
+
+&lt;p&gt;疲れていたので考えたことを思い付くままに書いてみた。
+レゴで遊ぶときみたいにあまり難しく考えず、
+各自適当に必要になりそうなMiddlewareやAdapterを気が向いたらつくっていって、
+最後にせーので合体して完成させられるとかっこ良い。
+特に何か新しい発想はなくて、品質の良いパーツがもう少し増えていって、
+組み合わせるだけで何か出来るようになったらいいなという話だった。&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>Atom Contribution Guideline</title>
+    <link rel="alternate" href="http://r7kamura.github.io/2014/02/28/atom-contribution-guideline.html"/>
+    <id>http://r7kamura.github.io/2014/02/28/atom-contribution-guideline.html</id>
+    <published>2014-02-28T00:00:00+00:00</published>
+    <updated>2014-03-12T07:52:21+00:00</updated>
+    <author>
+      <name>r7kamura</name>
+    </author>
+    <content type="html">&lt;p&gt;&lt;a href="https://atom.io/docs/latest/contributing"&gt;Atomの開発者向けガイドライン&lt;/a&gt;
+で紹介されている、汎用的に適用出来そうな項目をまとめた。&lt;/p&gt;
+
+&lt;h2&gt;Pull Request&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;出来るだけスクショやアニメGIFを貼ろう&lt;/li&gt;
+&lt;li&gt;期待する挙動を書こう&lt;/li&gt;
+&lt;li&gt;似た機能をどこかで見たことがあれば紹介しよう&lt;/li&gt;
+&lt;li&gt;言語ごとのガイドラインに従おう&lt;/li&gt;
+&lt;li&gt;コードにドキュメントを書こう&lt;/li&gt;
+&lt;li&gt;良い文章を伴った構造化されたテストを書こう&lt;/li&gt;
+&lt;li&gt;ファイルの末尾には改行を入れよう&lt;/li&gt;
+&lt;li&gt;プラットフォーム依存のコードは避けよう&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Commit Message&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;現在時制で書こう&lt;/li&gt;
+&lt;li&gt;命令形で書こう&lt;/li&gt;
+&lt;li&gt;1行目は72文字以内に収めよう&lt;/li&gt;
+&lt;li&gt;関連するIssueやPull Requestに参照を貼ろう&lt;/li&gt;
+&lt;li&gt;形式的なものには絵文字を使おう (整形、速度改善、ドキュメント更新など)&lt;/li&gt;
+&lt;/ul&gt;
+</content>
+  </entry>
+  <entry>
+    <title>Gitreceive</title>
+    <link rel="alternate" href="http://r7kamura.github.io/2014/02/27/gitreceive.html"/>
+    <id>http://r7kamura.github.io/2014/02/27/gitreceive.html</id>
+    <published>2014-02-27T00:00:00+00:00</published>
+    <updated>2014-03-12T07:52:21+00:00</updated>
+    <author>
+      <name>r7kamura</name>
+    </author>
+    <content type="html">&lt;p&gt;&lt;a href="https://github.com/progrium/gitreceive"&gt;gitreceive&lt;/a&gt;
+という、git push時に任意の処理を実行する為のツールがある。
+&lt;a href="http://r7kamura.github.io/2014/02/18/private-paas-beach.html"&gt;Dokku&lt;/a&gt;
+の中で同様の仕組みが使われており、
+git push時にbuildpacksでアプリをbuildしDockerコンテナの中で動かす、
+という機能を実現している。&lt;/p&gt;
+
+&lt;h2&gt;認証機能&lt;/h2&gt;
+
+&lt;p&gt;gitreceiveはSSH公開鍵登録用インターフェース、
+及び公開鍵を利用した簡易的な認証機能を持っているが、
+公開鍵を登録したユーザからのPushのみを許可するというもので、
+Pushするアプリケーションごとに別々の権限を与えるということは出来ない。&lt;/p&gt;
+
+&lt;h2&gt;forced command&lt;/h2&gt;
+
+&lt;p&gt;gitreceiveはSSHのforced commandと呼ばれる機能を利用している。
+forced commandを使うと「SSH接続時に何をするか」という情報を、
+クライアント側ではなくサーバ側で指定出来る。
+OpenSSHでは、authorized_keysに実行したいコマンドを指定することで実現出来る。
+gitreceiveはSSH公開鍵の登録時にforced commandを使い、
+git pushによりSSH接続が行われた際に
+/home/${GITUSER}/gitreceive を実行している。
+Dokkuでは、このタイミングで /user/local/bin/dokku を実行している。&lt;/p&gt;
+
+&lt;h2&gt;Receiver&lt;/h2&gt;
+
+&lt;p&gt;gitreceiveにより実行されるファイルをReceiverと呼ぶ。
+Receiverには、Pushされたレポジトリ名、リビジョン、ユーザ名などが引数で渡され、
+Pushされたデータの内容は標準入力で受け取れる。
+gitreceiveのREADMEでは、git push時にHTTPリクエストを送る例を紹介している。
+Receiverの内容を変更することで、
+例えばモニタリングに利用したり、
+DokkuのようにDockerコンテナにアプリをデプロイしたりということが可能になる。&lt;/p&gt;
+
+&lt;h2&gt;gitreceive-next&lt;/h2&gt;
+
+&lt;p&gt;gitreceiveの次期バージョンとして、現在
+&lt;a href="https://github.com/flynn/gitreceive-next"&gt;gitreceive-next&lt;/a&gt;
+が開発されている。
+gitreceiveはSSHのフックを設定するための単純なShellScriptだったが、
+gitreceive-nextはGo言語製のSSHサーバとして実装されている。
+主な用途はgit pushを待ち受けることではあるものの
+Gitに依存する処理はほぼ取り除かれており、
+起動時に指定された実行ファイルに対してSSH接続を委譲するための認証機能付きリバースプロキシ、というような存在になっている。
+今後は権限やルーティング管理、複数ノード間での設定共有などの機能を追加予定とのこと。&lt;/p&gt;
+</content>
+  </entry>
+  <entry>
+    <title>Etcd</title>
+    <link rel="alternate" href="http://r7kamura.github.io/2014/02/26/etcd.html"/>
+    <id>http://r7kamura.github.io/2014/02/26/etcd.html</id>
+    <published>2014-02-26T00:00:00+00:00</published>
+    <updated>2014-03-12T07:52:21+00:00</updated>
+    <author>
+      <name>r7kamura</name>
+    </author>
+    <content type="html">&lt;p&gt;DockerやFlynnを調べている中でetcdについて少し知識を得た。&lt;/p&gt;
+
+&lt;h2&gt;概要&lt;/h2&gt;
+
+&lt;p&gt;etcdはあるクラスタ内の複数のノード(≒ホスト)間で値を共有出来るKVSで、
+クラスタ内の全てのノード上でetcdを動かしておくことで、
+ノード間で設定値を共有したりサービスディスカバリに利用したり出来る。
+CoreOSという小さなOSの部品の1つとして開発されており、Go言語で実装されている。&lt;/p&gt;
+
+&lt;h2&gt;KVS&lt;/h2&gt;
+
+&lt;p&gt;KeyとValueには文字列を利用する。
+Keyはファイルシステムのパスのようにスラッシュ区切りの形式になっており、
+ディレクトリとファイルのように利用出来る。
+例えば、あるディレクトリ(≒名前空間)の中に含まれるファイル(≒値)を全て取得する、ということも出来る。&lt;/p&gt;
+
+&lt;h2&gt;機能&lt;/h2&gt;
+
+&lt;p&gt;HTTP経由で操作出来る。
+Curl等からでも簡単に利用出来るが、
+Go言語で書かれた専用クライアントも利用出来る。
+KeyはURLのパスで指定し、値はリクエストボディで渡す。
+取得にはGET、保存にはPUT、削除にはDELETEを使う他、
+GETで待ち受けながら設定の変更通知を監視する機能がある。
+その他、値の保存時にTTL(有効期限)を設定する機能や、
+Atomicに更新する機能(変更前後の値を渡して一致したときのみ更新)、
+クライアント証明書を利用してSSL認証を行う機能が用意されている。&lt;/p&gt;
+
+&lt;h2&gt;合意形成&lt;/h2&gt;
+
+&lt;p&gt;クラスタ内のノード内で同じ値を共有する(=合意を形成する)ため、
+Raftというアルゴリズムを用いている。
+クラスタ内の複数のノードの内、1つのノードが選挙形式によって代表となり、
+残りのノードは代表と通信することで値を共有する。
+通信エラーなどによって代表のノードと通信出来なくなった場合、
+残されたノードの中で選挙を行い新たな代表を決定する。
+同じく合意形成の為のプロトコルの集合であるPaxosアルゴリズムとよく似ているが、
+Raftはより現実的な問題に対処出来ると謳っている。
+なお、P2P間での情報伝達手段としてはSerfに代表されるようなGossip Protocolも存在する。&lt;/p&gt;
+
+&lt;h2&gt;使い道&lt;/h2&gt;
+
+&lt;p&gt;用途の1つとして、ノードを跨いだ複数のDockerコンテナの管理が考えられる。
+&lt;a href="http://r7kamura.github.io/2014/02/18/private-paas-beach.html"&gt;前回の記事&lt;/a&gt;
+ではDokkuを利用してmini-Herokuを構築する方法を紹介したが、
+Dokkuは単一の親ホスト上にプロキシを1台立て、
+新しくコンテナが追加されるたびにプロキシの設定ファイルを追加していくという方式だった。
+この方式ではコンテナやプロキシを複数のホストに配置してスケールさせることが出来なかったが、
+etcdを使うことで、稼働中のコンテナやプロキシのアドレス、空いているマシンリソースなどを共有し、
+有機的にクラスタをスケールさせていくことが出来ると考えられる。&lt;/p&gt;
+
+&lt;h2&gt;参考&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://github.com/coreos/etcd"&gt;coreos/etcd&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://coreos.com/using-coreos/etcd/"&gt;Using etcd with CoreOS&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://flynn.io/"&gt;Flynn - The product that ops provides to developers&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://raftconsensus.github.io/"&gt;Raft Consensus Algorithm&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://speakerdeck.com/vanstee/raft-consensus-for-rubyists"&gt;Raft: Consensus for Rubyists // Speaker Deck&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://github.com/hashicorp/serf"&gt;hashicorp/serf&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://qiita.com/nyarla/items/ba3f05c7c2c7bd6490e8"&gt;AdventCalendar - NEETのうちに押さえておきたいP2P技術入門 - Qiita&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://ja.wikipedia.org/wiki/Apache_ZooKeeper"&gt;Apache ZooKeeper - Wikipedia&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://r7kamura.github.io/2014/02/18/private-paas-beach.html"&gt;Private PaaS Beach - r7kamura per second&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</content>
+  </entry>
+  <entry>
+    <title>Private PaaS Beach</title>
+    <link rel="alternate" href="http://r7kamura.github.io/2014/02/18/private-paas-beach.html"/>
+    <id>http://r7kamura.github.io/2014/02/18/private-paas-beach.html</id>
+    <published>2014-02-18T00:00:00+00:00</published>
+    <updated>2014-03-12T07:52:21+00:00</updated>
+    <author>
+      <name>r7kamura</name>
+    </author>
+    <content type="html">&lt;h2&gt;Dokku&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href="https://github.com/progrium/dokku/"&gt;https://github.com/progrium/dokku/&lt;/a&gt;&lt;br&gt;
+Dokkuを使えばmini-Herokuのような環境を簡単に構築出来る。
+Dokkuを利用して構築したホストに対してgit pushでコードをデプロイすると、
+HerokuのBuildpacksの仕組みを利用して環境が構築され、
+Dockerのコンテナ上でアプリが起動し、nginxの設定が更新される。
+Dokkuのホスト上でnginxがHTTPリクエストを待ち受けており、
+サブドメインを元に適切なコンテナにリクエストを渡すという仕組みになっている。&lt;/p&gt;
+
+&lt;h2&gt;Digital Ocean&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href="https://www.digitalocean.com/?refcode=3eaa05dda32a"&gt;https://www.digitalocean.com/&lt;/a&gt;&lt;br&gt;
+Dokkuを試しに使ってみるにはDigital Oceanを利用するのが便利。
+最初からDokkuがインストールされた状態のイメージが用意されていること、
+1時間毎の都度課金なので使わないときにはスナップショットを撮って削除しておけば良いこと、
+月5$で安い割にSSDが付いていて性能が良いこと、日本に近いシンガポールリージョンがあること、
+10$分無料のクーポンコード(SSD2014)があること、Dokkuの構築完了まで全てブラウザだけで完結すること、
+などがDigital Oceanが便利な部分。以下の手順で環境構築は完了、好きなアプリをデプロイし放題です。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Sign Upする&lt;/li&gt;
+&lt;li&gt;クレカ情報を登録する&lt;/li&gt;
+&lt;li&gt;SSH公開鍵を登録する&lt;/li&gt;
+&lt;li&gt;Dokkuインストール済みのDroplet(=インスタンス)を作成する&lt;/li&gt;
+&lt;li&gt;DropletのIPアドレス(=Dokkuの初期設定画面)をブラウザで開く&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2&gt;デプロイ&lt;/h2&gt;
+
+&lt;p&gt;HerokuのBuildpackに対応している形式のアプリであれば何でもデプロイできる。
+以下の例では、試しにRackアプリを置いてみている。
+Rackアプリをつくる場合には、Gemfile、Gemfile.lock、config.ruがあれば良い。
+&lt;code&gt;dokku@&amp;lt;DropletのIPアドレス&amp;gt;:&amp;lt;任意のアプリ名&amp;gt;&lt;/code&gt;にgit pushすればデプロイされる。
+今回独自ドメインを設定していないのでIPアドレスとポート番号になっているけれど、
+自分でドメインを設定すればアプリごとに別々のサブドメインが割り振られるようになる。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ mkdir tinyrack
+$ cd tinyrack
+$ echo &amp;#39;source &amp;quot;https://rubygems.org&amp;quot;&amp;#39; &amp;gt;&amp;gt; Gemfile
+$ echo &amp;#39;gem &amp;quot;rack&amp;quot;&amp;#39; &amp;gt;&amp;gt; Gemfile
+$ echo &amp;#39;run -&gt;(*) { [200, {}, [&amp;quot;Hello, world\\n&amp;quot;]] }&amp;#39; &amp;gt;&amp;gt; config.ru
+$ bundle install
+$ git init
+$ git add .
+$ git commit -m &amp;quot;Initial commit&amp;quot;
+$ git push dokku@127.199.238.184:tinyrack master
+$ curl http://127.199.238.184:49156
+Hello, world
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2&gt;DockerUI&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href="https://github.com/crosbymichael/dockerui"&gt;https://github.com/crosbymichael/dockerui&lt;/a&gt;&lt;br&gt;
+DockerUIというDocker管理用のアプリをDokku上にデプロイしておくと、Dockerの様子がブラウザで確認出来て便利。
+DockerのプロセスはREST APIを持ったHTTPサーバを起動させており、HTTP経由でDockerを操作することが出来る。
+DockerUIはHTML/CSS/JavaScriptで作られていて、JavaScriptからDockerのAPIにアクセスすることで管理画面を実現している。
+認証機能が無いので、インターネットからアクセス出来る場所に置く場合は自分で設定する必要がある。
+DockerUIの他には&lt;a href="https://github.com/shipyard/shipyard"&gt;Shipyard&lt;/a&gt;などのツールがある。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ ssh root@127.199.238.184
+&amp;gt; echo &amp;#39;DOCKER_OPTS=&amp;quot;-H unix:///var/run/docker.sock -H tcp://0.0.0.0:4243 -api-enable-cors&amp;quot;&amp;#39; &amp;gt;&amp;gt; /etc/default/docker
+&amp;gt; restart docker
+&amp;gt; exit
+$ git clone git@github.com:crosbymichael/dockerui.git
+$ cd dockerui
+$ git push dokku@127.199.238.184:dockerui master
+$ ssh dokku@127.199.238.184 config:set dockerui DOCKER_ENDPOINT=http://127.199.238.184:4243
+$ open http://127.199.238.184:49154
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src="/images/2014-02-18/dockerui.png" alt=""&gt;&lt;/p&gt;
+
+&lt;h2&gt;最初から動く環境&lt;/h2&gt;
+
+&lt;p&gt;最初は手元のMac OSX上でDokkuを動かそうとしたのだけど、
+久しぶりにMacでDockerを動かそうとして、そもそも最近DockerがMacをサポートしたという件について調べたり、
+その件についてドキュメントが少なくて困ったり、実際にやってみたところ上手く動かせなかったり、
+Vagrantを入れ直してDockerが動くUbuntuのイメージを取得し直したり、
+Dokkuのセットアップ用のコードが上手く動かなかったり、
+MacとVagrantとDockerの間のPort Forwardingが問題なのか自分のやっていることが問題なのか分からなかったりした。
+人生は短い。&lt;/p&gt;
+</content>
+  </entry>
+</feed>

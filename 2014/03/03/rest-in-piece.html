@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta content="IE=edge;chrome=1" http-equiv="X-UA-Compatible" />
+    <title>REST in Piece - r7kamura per second</title><link rel="alternate" type="application/atom+xml" title="Atom Feed" href="/feed.xml" /><link href="/stylesheets/all.css?1394610828" media="all" rel="stylesheet" type="text/css" /><link href="/images/favicon.ico" rel="icon" type="image/ico" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-inner"><a href="/">
+        <div class="header-image">
+          <img width="100" height="100" class="header-image-element" src="/images/r7kamura.png?1394610828" />
+        </div>
+        <div class="header-text">
+          <h1 class="header-text-title">
+            r7kamura per second
+          </h1>
+          <p class="header-text-description">
+            Bits of technologies piled up here and there.
+          </p>
+        </div></a>
+        
+      </div>
+    </header>
+    <div class="main">
+      <div class="main-inner main-inner-single-article">
+        <article class="main-article">
+          <div class="main-article-header">
+            <h1 class="main-article-header-title">
+              REST in Piece
+            </h1>
+            <div class="main-article-header-date">
+              2014-03-03
+            </div>
+          </div>
+          <p>人の手でREST APIをつくるのに少し疲れた。</p>
+          
+          <h2>Overview</h2>
+          
+          <p>REST API生成用のフレームワークがあればなと思い、少し思考を巡らせる。
+          Adapter &lt; Module という二層構造で構成されたフレームワーク。
+          AdapterというDB接続用のアプリを、
+          Moduleと呼ばれる幾つかのMiddlewareが内包する。</p>
+          
+          <h2>Adapter</h2>
+          
+          <p>AdapterはDBの為のHTTPラッパーとしての責務を負う。
+          具体的には、HTTPリクエストを解釈してDBに問い合わせる機能と、
+          DBからの応答をHTTPレスポンスに変換する機能だけを持つ。
+          実際に利用するDBと疎結合にするため、Adapterの内部実装も層構造になることが予想される。
+          Adapterを取り替えることで別のDBも利用出来る。
+          例えば一般的なRDBを使う代わりに、
+          更に別のAPIにリクエストを委譲する等の用途が考えられる。
+          既存のAPIから徐々に移行していきたい場合などに必要になる。</p>
+          
+          <ul>
+          <li>ActiveRecordAdapter</li>
+          <li>MongoidAdapter</li>
+          <li>SomeAPIAdapter</li>
+          </ul>
+          
+          <h2>Module</h2>
+          
+          <p>必要に応じてコアの機能をモジュールで拡張する。</p>
+          
+          <ul>
+          <li>Authentication - OAuth認証やBasic認証を行う</li>
+          <li>Caching - HTTPレイヤでのキャッシュ (ETag等)</li>
+          <li>HATEOAS - リソース間を遷移するためのリンク情報を提供する</li>
+          <li>Interface - インターフェース定義を宣言する</li>
+          <li>Logging - リクエスト &amp; レスポンスのログを取る</li>
+          <li>MIME - 最適なContent-Typeに変換する</li>
+          <li>Validation - 与えられたインターフェース定義を元にリクエストを検閲する</li>
+          </ul>
+          
+          <h2>Examples</h2>
+          
+          <ul>
+          <li><a href="http://python-eve.org/index.html">Eve</a> - Python製のREST API用フレームワーク</li>
+          <li><a href="https://parse.com/docs/rest">Parse</a> - REST APIも提供するMBaaS</li>
+          <li><a href="https://github.com/r7kamura/restaurant/">Restaurant</a> - MongoDBの単純なRailsラッパー</li>
+          <li><a href="https://github.com/r7kamura/rack-spec">Rack::Spec</a> - REST APIの為のRack-Middleware</li>
+          <li><a href="https://github.com/r7kamura/rack-mongoid_adapter">Rack::MongoidAdapter</a> - Rack用のMongoidラッパー</li>
+          </ul>
+          
+          <h2>おわりに</h2>
+          
+          <p>疲れていたので考えたことを思い付くままに書いてみた。
+          レゴで遊ぶときみたいにあまり難しく考えず、
+          各自適当に必要になりそうなMiddlewareやAdapterを気が向いたらつくっていって、
+          最後にせーので合体して完成させられるとかっこ良い。
+          特に何か新しい発想はなくて、品質の良いパーツがもう少し増えていって、
+          組み合わせるだけで何か出来るようになったらいいなという話だった。</p>
+          
+        </article>
+      </div>
+    </div>
+    <footer class="footer">
+      <div class="footer-inner">
+        <p class="footer-copyright">
+          Copyright &copy; 2013-2014 by <a target="_blank" href="http://twitter.com/r7kamura">@r7kamura</a>
+        </p>
+        <p class="footer-powers">
+          Powered by <a href="https://github.com/r7kamura/r7kamura.github.io">Github</a> & <a href="https://travis-ci.org/r7kamura/r7kamura.github.io">Travis CI</a> & <a href="https://github.com/r7kamura/sitespec">Sitespec</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

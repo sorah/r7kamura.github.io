@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta content="IE=edge;chrome=1" http-equiv="X-UA-Compatible" />
+    <title>Device Specific API Design - r7kamura per second</title><link rel="alternate" type="application/atom+xml" title="Atom Feed" href="/feed.xml" /><link href="/stylesheets/all.css?1394610828" media="all" rel="stylesheet" type="text/css" /><link href="/images/favicon.ico" rel="icon" type="image/ico" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-inner"><a href="/">
+        <div class="header-image">
+          <img width="100" height="100" class="header-image-element" src="/images/r7kamura.png?1394610828" />
+        </div>
+        <div class="header-text">
+          <h1 class="header-text-title">
+            r7kamura per second
+          </h1>
+          <p class="header-text-description">
+            Bits of technologies piled up here and there.
+          </p>
+        </div></a>
+        
+      </div>
+    </header>
+    <div class="main">
+      <div class="main-inner main-inner-single-article">
+        <article class="main-article">
+          <div class="main-article-header">
+            <h1 class="main-article-header-title">
+              Device Specific API Design
+            </h1>
+            <div class="main-article-header-date">
+              2014-02-13
+            </div>
+          </div>
+          <p><a href="http://techblog.netflix.com/2012/07/embracing-differences-inside-netflix.html">The Netflix Tech Blog: Embracing the Differences : Inside the Netflix API Redesign</a><br>
+          Netflixの開発者ブログで触れられているように、Netflixは以下の4つの方針に沿って彼らのAPIを再構築した。</p>
+          
+          <ul>
+          <li>デバイスごとの差異を受け入れる</li>
+          <li>コンテンツの収集と整形を分ける</li>
+          <li>クライアントとサーバの境界線を再定義する</li>
+          <li>変化を促進する</li>
+          </ul>
+          
+          <h2>デバイスごとの差異を受け入れる</h2>
+          
+          <p><img src="http://3.bp.blogspot.com/-ljYR5yd04BY/T_TZ47FlnxI/AAAAAAAAADg/zGitjj4iLCQ/s400/Slide01.jpg" alt=""></p>
+          
+          <p>REST APIのように1つの汎用的なインターフェースで全ての要件を満たそうというアプローチは、
+          APIへの理解が簡単になる一方、後から変更することは難しくなり、また非効率な処理を生み出しやすくなる。
+          この手のアプローチが重視しているのは、API提供者側の開発コストを下げることであり、
+          API利用者の利便性を第一に考えたものではないと彼らは考える。</p>
+          
+          <p>APIを利用するデバイスは、例えば機器の性能や、開発言語やモデル、画面の大きさ、通信方法、
+          そして利用者との関係性など、様々な面で異なっている。
+          これらの違いを受け入れるため、彼らのAPI開発チームは、
+          各デバイス用のAPIを各々のデバイスのUIチームが開発出来るような仕組みを提供することにした。
+          この仕組みには、従来とは異なる設計を取り入れる必要があった。</p>
+          
+          <h2>コンテンツの収集と整形を分ける</h2>
+          
+          <p><img src="http://4.bp.blogspot.com/-wURrBdAsWAA/T_TaEUwk2XI/AAAAAAAAADs/Cx5foKZlYVU/s400/Slide02.jpg" alt=""></p>
+          
+          <p>従来のREST APIのモデルでは、
+          コンテンツ(=DBに格納されているデータなど)の収集処理とそれをHTTPレスポンスとして整形する処理は、
+          大体同じところで行われていた(Controller等で同スレッド内で処理される)。
+          彼らの新しい設計では、コンテンツの収集処理と整形処理は明確に分離される。
+          まず各デバイス用のEndpoint層がリクエストを受け付け、
+          リクエストを元にコアとなるJava APIに対してコンテンツの収集を依頼する。
+          この収集処理はコールバックを活用した並列処理で実現されるが、
+          彼らはこれをFunctional Reactive Programmingと呼んでいる。
+          収集されたコンテンツは、各デバイスに最適な形に整形された後、HTTPレスポンスとして返却される。</p>
+          
+          <h2>クライアントとサーバの境界線を再定義する</h2>
+          
+          <p><img src="http://3.bp.blogspot.com/-pMlXH0bvPSA/T_TadvNKq6I/AAAAAAAAAD4/tewK35vIEtU/s400/Slide03.jpg" alt=""></p>
+          
+          <p>これまでは、クライアントコードと言えば各デバイスやUIの上で動くコード、
+          サーバコードと言えばサーバ上に存在するコードのことであり、
+          これらはネットワークという境界線で明確に分けられていた。
+          彼らの新しいアプローチでは、この境界線をサーバ側に押し上げ、
+          各デバイス用のEndpoint層もクライアントコードとする。
+          これによりデバイスとサーバがより効率的に作用し合うことができ、
+          通信のコストを引き下げることが出来るようになると考えられる。</p>
+          
+          <h2>変化を促進する</h2>
+          
+          <p><img src="http://3.bp.blogspot.com/-ISPfN3AVxQA/T_Tai9NJReI/AAAAAAAAAEE/qQDFuxiIlWM/s400/Slide04.jpg" alt=""></p>
+          
+          <p>この設計は、デバイスが増える度にアダプターを作っていかなければならないという問題も抱えている。
+          しかしながら、各々のデバイスに最適化していかなければならないということも、彼らにとっては重要な問題だった。</p>
+          
+          <p>前述した境界線の再定義により、クライアント開発者は自由にAPIを変更出来るようになった。
+          これまでに説明したようなREST APIの設計とは異なり、
+          各デバイス用のEndpointへの変更が他に影響を及ぼさないため、
+          クライアント開発者はAPIチームに承認を得ることなく自由に変更を行える。
+          一貫性や後方互換性についての議論に煩わされることなく、自由に変更を行うことが出来る。
+          勿論この手法によりREST APIの得意としていた利点は失われたかもしれないが、
+          それでも彼らは変化を促進することをより重視したと言える。</p>
+          
+          <p>クライアント開発者がサーバサイドのコードも書かなければならないというのは、彼らにとって大した問題ではない。
+          なぜなら、彼らが雇用しているのは皆優秀な開発者ばかりだから。
+          サーバサイドのコードに問題が起きやすくなるという声もあるかもしれないが、
+          それはクライアントサイドのコードについても言えること。
+          どちらにも潜在的に問題が起こる可能性は含まれている。</p>
+          
+        </article>
+      </div>
+    </div>
+    <footer class="footer">
+      <div class="footer-inner">
+        <p class="footer-copyright">
+          Copyright &copy; 2013-2014 by <a target="_blank" href="http://twitter.com/r7kamura">@r7kamura</a>
+        </p>
+        <p class="footer-powers">
+          Powered by <a href="https://github.com/r7kamura/r7kamura.github.io">Github</a> & <a href="https://travis-ci.org/r7kamura/r7kamura.github.io">Travis CI</a> & <a href="https://github.com/r7kamura/sitespec">Sitespec</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
